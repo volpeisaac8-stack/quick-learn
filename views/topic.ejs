@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="manifest" href="/manifest.json">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="Quick Learn">
+<title><%= topic %></title>
+
+<style>
+
+body{
+font-family: Arial;
+max-width:800px;
+margin:auto;
+padding:30px;
+line-height:1.6;
+background:#f5f7fb;
+}
+
+.card{
+background:white;
+padding:25px;
+border-radius:15px;
+box-shadow:0 3px 15px rgba(0,0,0,0.1);
+}
+
+.keyword{
+display:inline-block;
+background:#eef2ff;
+padding:6px 12px;
+border-radius:20px;
+margin:5px;
+font-size:14px;
+}
+
+button{
+padding:10px 18px;
+border:none;
+border-radius:8px;
+background:#4f46e5;
+color:white;
+cursor:pointer;
+margin-right:10px;
+}
+
+button:hover{
+opacity:0.9;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h1>📚 <%= topic %></h1>
+
+<div class="card">
+
+<h2>Quick Summary</h2>
+<p><%= summary %></p>
+
+<h3>Key Concepts</h3>
+
+<% keywords.forEach(word => { %>
+<span class="keyword"><%= word %></span>
+<% }) %>
+
+<br><br>
+
+<div>
+
+<form action="/study" method="POST" style="display:inline;">
+<input type="hidden" name="topic" value="<%= baseTopic %>">
+<input type="hidden" name="mode" value="summary">
+<button style="<%= mode==='summary' ? 'background:#1d4ed8' : '' %>">
+📘 Summary Mode
+</button>
+</form>
+
+<form action="/study" method="POST" style="display:inline;">
+<input type="hidden" name="topic" value="<%= baseTopic %>">
+<input type="hidden" name="mode" value="history">
+<button style="<%= mode==='history' ? 'background:#1d4ed8' : '' %>">
+📜 History Mode
+</button>
+</form>
+
+</div>
+
+</div>
+
+</body>
+</html>
