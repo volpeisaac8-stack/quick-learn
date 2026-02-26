@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Quiz</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="/styles.css">
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>Quiz Mode</h1>
+
+<p>Score: <%= score %> / <%= total %></p>
+
+<div class="card">
+<h3><%= question.question %></h3>
+
+<form action="/quiz/answer" method="POST">
+
+<% question.choices.forEach(choice => { %>
+
+<label class="quiz-option">
+<input type="radio" name="answer" value="<%= choice %>">
+<%= choice %>
+</label>
+
+<% }) %>
+
+<br>
+
+<button type="submit">Submit Answer</button>
+
+</form>
+
+</div>
+
+</div>
+
+</body>
+</html>

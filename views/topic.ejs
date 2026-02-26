@@ -1,190 +1,86 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title><%= topicData.title %></title>
-    <link rel="stylesheet" href="/styles.css">
-    <link rel="manifest" href="/manifest.json">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+<title><%= topicData.title %></title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<link rel="stylesheet" href="/styles.css">
 </head>
 
-<script>
-if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/sw.js');
-}
-</script>
 <body>
+
+<div class="container">
 
 <h1><%= topicData.title %></h1>
 
+<!-- STUDY CONTENT CARD (ALWAYS SHOW) -->
+<div class="card">
+
+<% if(mode === "deep" && deepContent){ %>
+
+<h2>Deep Dive</h2>
+
+<div>
+<%- deepContent %>
+</div>
+
+<% } else { %>
+
 <p><%= topicData.extract %></p>
 
-<h3>Modes</h3>
-<a href="/topic?topic=<%= topicData.title %>&mode=summary">Summary</a> |
-<a href="/topic?topic=<%= topicData.title %>&mode=deep">Deep Dive</a> |
-<a href="/topic?topic=<%= topicData.title %>&videos=true">
-    <button>🎥 Related Videos</button>
-</a>
-
-
-<hr>
-
-<% if (mode === "deep" && deepContent) { %>
-    <h2>Deep Dive</h2>
-    <div>
-        <%- deepContent %>
-    </div>
 <% } %>
 
-<% if (videos && videos.length > 0) { %>
+</div>
+
+<!-- VIDEO SECTION -->
+<% if(videos && videos.length > 0){ %>
 
 <h2>Related Videos</h2>
 
 <% videos.forEach(video => { %>
 
 <div class="card">
-    <p><%= video.snippet.title %></p>
 
-    <iframe
-        width="100%"
-        height="250"
-        src="https://www.youtube.com/embed/<%= video.id.videoId %>"
-        frameborder="0"
-        allowfullscreen>
-    </iframe>
+<p><%= video.snippet.title %></p>
+
+<iframe width="100%" height="220"
+src="https://www.youtube.com/embed/<%= video.id.videoId %>"
+allowfullscreen>
+</iframe>
+
 </div>
 
 <% }) %>
 
 <% } %>
+
+<!-- ACTION BUTTONS -->
+
+<a href="/topic?topic=<%= topicData.title %>&mode=deep">
+<button>Deep Dive Mode</button>
+</a>
+
+<a href="/topic?topic=<%= topicData.title %>">
+<button>Summary Mode</button>
+</a>
+
+<a href="/topic?topic=<%= topicData.title %>&videos=true">
+<button>Related Videos</button>
+</a>
+
 <form action="/star" method="POST">
-    <input type="hidden" name="topic" value="<%= topicData.title %>">
-    <button>⭐ Star This Topic</button>
+<input type="hidden" name="topic" value="<%= topicData.title %>">
+<button>⭐ Save Topic</button>
 </form>
 
 <br>
-<a href="/saved">View Saved Topics</a> |
-<a href="/">Back Home</a>
+
+<a href="/">
+<button>Home</button>
+</a>
+
+</div>
 
 </body>
 </html>
-
-<style>
-/* ===== Global Layout ===== */
-
-body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    margin: 0;
-    padding: 20px;
-    background: #f5f7fb;
-
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-}
-
-/* ===== Container ===== */
-
-.container {
-    width: 100%;
-    max-width: 700px;
-}
-
-/* ===== Headers ===== */
-
-h1 {
-    font-size: 28px;
-    margin-bottom: 15px;
-    color: #1f2937;
-}
-
-h2, h3 {
-    color: #374151;
-}
-
-/* ===== Cards ===== */
-
-.card {
-    background: white;
-    border-radius: 18px;
-    padding: 22px;
-    margin: 18px 0;
-
-    box-shadow:
-        0 2px 8px rgba(0,0,0,0.06);
-}
-
-/* Deep dive content readability */
-
-.card div,
-.card p {
-    line-height: 1.6;
-    font-size: 16px;
-    color: #374151;
-}
-
-/* ===== Buttons ===== */
-
-button {
-    background: #4f46e5;
-    color: white;
-    border: none;
-    padding: 12px 18px;
-
-    border-radius: 12px;
-    font-size: 15px;
-
-    cursor: pointer;
-    transition: 0.2s ease;
-    margin: 6px;
-}
-
-button:hover {
-    opacity: 0.9;
-}
-
-/* Mode Links */
-
-a {
-    color: #4f46e5;
-    text-decoration: none;
-    font-weight: 500;
-}
-
-a:hover {
-    text-decoration: underline;
-}
-
-/* ===== Flashcards ===== */
-
-details {
-    background: #f8fafc;
-    padding: 14px;
-    border-radius: 12px;
-    margin-top: 10px;
-    cursor: pointer;
-}
-
-/* Mobile Optimization */
-
-@media (max-width: 600px) {
-
-    body {
-        padding: 15px;
-    }
-
-    h1 {
-        font-size: 24px;
-    }
-
-    .card {
-        padding: 18px;
-    }
-
-    button {
-        width: 100%;
-        margin-top: 8px;
-    }
-}
-</style>

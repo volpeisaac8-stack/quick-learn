@@ -1,17 +1,11 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <link rel="manifest" href="/manifest.json">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Saved Topics</title>
-    <link rel="stylesheet" href="/styles.css">
+<title>Saved Topics</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="/styles.css">
 </head>
-<script>
-if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/sw.js');
-}
-</script>
+
 <body>
 
 <h1>Saved Topics</h1>
@@ -20,60 +14,24 @@ if ('serviceWorker' in navigator) {
 
 <% starredTopics.forEach(topic => { %>
 
-    <div class="card" style="display:flex; justify-content:space-between; align-items:center;">
+<div class="card">
 
-        <a href="/topic?topic=<%= topic %>">
-            <%= topic %>
-        </a>
+<a href="/topic?topic=<%= topic %>">
+<%= topic %>
+</a>
 
-        <form action="/unsave" method="POST">
-            <input type="hidden" name="topic" value="<%= topic %>">
-            <button style="background:#dc5050;">✕</button>
-        </form>
+<form action="/unsave" method="POST">
+<input type="hidden" name="topic" value="<%= topic %>">
+<button>✕ Remove</button>
+</form>
 
-    </div>
+</div>
 
 <% }) %>
 
 </div>
 
-<br>
-
-<a href="/">Back Home</a>
+<a href="/"><button>Home</button></a>
 
 </body>
 </html>
-
-<style>
-    body {
-        font-family: Arial, sans-serif;
-        margin: 0;
-        padding: 20px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;   /* centers horizontally */
-        text-align: center;    /* centers text */
-    }
-
-    h1 {
-        text-align: center;
-    }
-
-    ul {
-        list-style-type: none;
-        padding: 0;
-    }
-
-    li {
-        margin: 10px 0;
-    }
-
-    a {
-        text-decoration: none;
-        color: #007BFF;
-    }
-
-    a:hover {
-        text-decoration: underline;
-    }
-</style>
