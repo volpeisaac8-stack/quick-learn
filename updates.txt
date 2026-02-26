@@ -1,0 +1,5 @@
+git add .
+git commit -m "update project"
+git push origin main
+
+run these to push a new update u numbskull

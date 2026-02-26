@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Saved Topics</title>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<script>
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js');
+}
+</script>
+<body>
+
+<h1>Saved Topics</h1>
+
+<ul>
+    <% starredTopics.forEach(topic => { %>
+        <li>
+            <a href="/topic?topic=<%= topic %>"><%= topic %></a>
+        </li>
+    <% }) %>
+</ul>
+
+<a href="/">Back Home</a>
+
+</body>
+</html>

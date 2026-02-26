@@ -1,96 +1,101 @@
 <!DOCTYPE html>
 <html>
 <head>
-<link rel="manifest" href="/manifest.json">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black">
-<meta name="apple-mobile-web-app-title" content="Quick Learn">
-<title><%= topic %></title>
-
-<style>
-
-body{
-font-family: Arial;
-max-width:800px;
-margin:auto;
-padding:30px;
-line-height:1.6;
-background:#f5f7fb;
-}
-
-.card{
-background:white;
-padding:25px;
-border-radius:15px;
-box-shadow:0 3px 15px rgba(0,0,0,0.1);
-}
-
-.keyword{
-display:inline-block;
-background:#eef2ff;
-padding:6px 12px;
-border-radius:20px;
-margin:5px;
-font-size:14px;
-}
-
-button{
-padding:10px 18px;
-border:none;
-border-radius:8px;
-background:#4f46e5;
-color:white;
-cursor:pointer;
-margin-right:10px;
-}
-
-button:hover{
-opacity:0.9;
-}
-
-</style>
-
+    <title><%= topicData.title %></title>
+    <link rel="stylesheet" href="/styles.css">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 
+<script>
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js');
+}
+</script>
 <body>
 
-<h1>📚 <%= topic %></h1>
+<h1><%= topicData.title %></h1>
 
-<div class="card">
+<p><%= topicData.extract %></p>
 
-<h2>Quick Summary</h2>
-<p><%= summary %></p>
+<h3>Modes</h3>
+<a href="/topic?topic=<%= topicData.title %>&mode=summary">Summary</a> |
+<a href="/topic?topic=<%= topicData.title %>&mode=deep">Deep Dive</a> |
+<a href="/topic?topic=<%= topicData.title %>&mode=flashcards">Flashcards</a>
 
-<h3>Key Concepts</h3>
+<hr>
 
-<% keywords.forEach(word => { %>
-<span class="keyword"><%= word %></span>
-<% }) %>
+<% if (mode === "deep" && deepContent) { %>
+    <h2>Deep Dive</h2>
+    <div>
+        <%- deepContent %>
+    </div>
+<% } %>
 
-<br><br>
+<% if (mode === "flashcards") { %>
+    <h2>Flashcards</h2>
+    <% flashcards.forEach(card => { %>
+        <div class="card">
+            <p><strong><%= card.question %></strong></p>
+            <details>
+                <summary>Show Answer</summary>
+                <p><%= card.answer %></p>
+            </details>
+        </div>
+    <% }) %>
+<% } %>
 
-<div>
-
-<form action="/study" method="POST" style="display:inline;">
-<input type="hidden" name="topic" value="<%= baseTopic %>">
-<input type="hidden" name="mode" value="summary">
-<button style="<%= mode==='summary' ? 'background:#1d4ed8' : '' %>">
-📘 Summary Mode
-</button>
+<form action="/star" method="POST">
+    <input type="hidden" name="topic" value="<%= topicData.title %>">
+    <button>⭐ Star This Topic</button>
 </form>
 
-<form action="/study" method="POST" style="display:inline;">
-<input type="hidden" name="topic" value="<%= baseTopic %>">
-<input type="hidden" name="mode" value="history">
-<button style="<%= mode==='history' ? 'background:#1d4ed8' : '' %>">
-📜 History Mode
-</button>
-</form>
-
-</div>
-
-</div>
+<br>
+<a href="/saved">View Saved Topics</a> |
+<a href="/">Back Home</a>
 
 </body>
 </html>
+
+<style>
+    body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 20px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;   /* centers horizontally */
+    text-align: center;    /* centers text */
+}
+
+h1, h2, h3 {
+    text-align: center;
+}
+
+form {
+    margin: 20px 0;
+}
+
+input {
+    padding: 10px;
+    width: 250px;
+    max-width: 90%;
+}
+
+button {
+    padding: 10px 15px;
+    margin-top: 10px;
+    cursor: pointer;
+}
+
+.card {
+    border: 1px solid #ccc;
+    padding: 15px;
+    margin: 15px 0;
+    border-radius: 8px;
+    width: 100%;
+    max-width: 500px;
+}
+</style>

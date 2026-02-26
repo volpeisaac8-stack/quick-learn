@@ -1,136 +1,154 @@
 const express = require("express");
 const axios = require("axios");
-const natural = require("natural");
+const bodyParser = require("body-parser");
 
 const app = express();
+const PORT = process.env.PORT || 3000;
 
-app.use(express.urlencoded({ extended: true }));
+app.use(express.static("public"));
+app.use(bodyParser.urlencoded({ extended: true }));
 app.set("view engine", "ejs");
 
-/*
-Wikipedia Client
-*/
+let starredTopics = [];
 
-const axiosInstance = axios.create({
-    headers: {
-        "User-Agent": "LearningEngine/1.0 (contact: bigman@gmail.com)",
-        "Accept": "application/json"
-    }
-});
-
-/*
-Wikipedia Fetch Engine
-*/
-
-async function fetchWikipedia(baseTopic, mode) {
-
-    let queryTopic = baseTopic;
-
-    if (mode === "history") {
-        queryTopic = baseTopic + " history";
-    }
-
-    const searchResponse = await axiosInstance.get(
-        "https://en.wikipedia.org/w/api.php",
-        {
-            params: {
-                action: "query",
-                list: "search",
-                srsearch: queryTopic,
-                format: "json"
-            }
-        }
-    );
-
-    const results = searchResponse.data?.query?.search;
-
-    if (!results || results.length === 0) return null;
-
-    const pageTitle = results[0].title;
-
-    const summaryResponse = await axiosInstance.get(
-        `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(pageTitle)}`
-    );
-
-    return {
-        pageTitle,
-        summary: summaryResponse.data?.extract || ""
-    };
-}
-
-/*
-Keyword Extractor
-*/
-
-function extractKeywords(text) {
-
-    const tokenizer = new natural.WordTokenizer();
-    const words = tokenizer.tokenize((text || "").toLowerCase());
-
-    const stopwords = natural.stopwords;
-
-    const filtered = words.filter(word =>
-        !stopwords.includes(word) &&
-        word.length > 4 &&
-        /^[a-z]+$/.test(word)
-    );
-
-    const counts = {};
-
-    filtered.forEach(word => {
-        counts[word] = (counts[word] || 0) + 1;
-    });
-
-    return Object.keys(counts)
-        .sort((a, b) => counts[b] - counts[a])
-        .slice(0, 10);
-}
-
-/*
-Unified Study Route
-*/
-
-app.post("/study", async (req, res) => {
-
-    const baseTopic = String(req.body.topic || "").trim();
-    const mode = req.body.mode || "summary";
-
-    if (!baseTopic) return res.send("Enter a topic.");
-
+/* ===============================
+   SAFE WIKIPEDIA SUMMARY FETCH
+================================ */
+async function fetchWikipedia(topic) {
     try {
+        const response = await axios.get(
+            `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(topic)}`,
+            {
+                headers: {
+                    "User-Agent": "QuickLearnApp/1.0"
+                }
+            }
+        );
 
-        const data = await fetchWikipedia(baseTopic, mode);
+        // If page exists but has no extract
+        if (!response.data.extract) return null;
 
-        if (!data) return res.send("No results found.");
-
-        res.render("topic", {
-            topic: data.pageTitle,
-            summary: data.summary,
-            keywords: extractKeywords(data.summary),
-            mode,
-            baseTopic
-        });
+        return response.data;
 
     } catch (error) {
-        console.error(error.response?.data || error.message);
-        res.send("Error fetching topic.");
+        return null;
     }
-});
+}
 
-/*
-Home Page
-*/
+/* ===============================
+   SAFE DEEP DIVE FETCH
+================================ */
+async function fetchDeepDive(topic) {
+    try {
+        const response = await axios.get(
+            "https://en.wikipedia.org/w/api.php",
+            {
+                params: {
+                    action: "parse",
+                    page: topic,
+                    format: "json",
+                    prop: "text",
+                    redirects: true
+                },
+                headers: {
+                    "User-Agent": "QuickLearnApp/1.0"
+                }
+            }
+        );
+
+        if (!response.data.parse) return null;
+
+        return response.data.parse.text["*"];
+
+    } catch {
+        return null;
+    }
+}
+
+/* ===============================
+   FLASHCARD GENERATOR
+================================ */
+async function generateFlashcards(topic) {
+    const summary = await fetchWikipedia(topic);
+    if (!summary) return [];
+
+    return [
+        {
+            question: `What is ${summary.title}?`,
+            answer: summary.extract
+        }
+    ];
+}
+
+/* ===============================
+   ROUTES
+================================ */
 
 app.get("/", (req, res) => {
     res.render("index");
 });
 
-/*
-Server Start
-*/
+app.get("/topic", async (req, res) => {
+    let topic = req.query.topic;
+    const mode = req.query.mode || "summary";
 
-app.use(express.static("public"));
+    if (!topic || topic.trim() === "") {
+        return res.redirect("/");
+    }
 
-app.listen(3000, () => {
-    console.log("Server running at http://localhost:3000");
+    topic = topic.trim();
+
+    const topicData = await fetchWikipedia(topic);
+
+    if (!topicData) {
+        return res.render("index", {
+            error: "Topic not found. Try a different search."
+        });
+    }
+
+    let deepContent = null;
+    let flashcards = [];
+
+    if (mode === "deep") {
+        deepContent = await fetchDeepDive(topicData.title);
+    }
+
+    if (mode === "flashcards") {
+        flashcards = await generateFlashcards(topicData.title);
+    }
+
+    res.render("topic", {
+        topicData,
+        mode,
+        deepContent,
+        flashcards,
+        starredTopics
+    });
+});
+
+/* ===============================
+   STAR TOPIC
+================================ */
+app.post("/star", (req, res) => {
+    const topic = req.body.topic;
+
+    if (topic && !starredTopics.includes(topic)) {
+        starredTopics.push(topic);
+    }
+
+    res.redirect("/saved");
+});
+
+/* ===============================
+   SAVED PAGE
+================================ */
+app.get("/saved", (req, res) => {
+    res.render("saved", { starredTopics });
+});
+
+/* ===============================
+   START SERVER
+================================ */
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
 });
