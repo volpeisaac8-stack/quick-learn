@@ -22,7 +22,7 @@ if ('serviceWorker' in navigator) {
 <h3>Modes</h3>
 <a href="/topic?topic=<%= topicData.title %>&mode=summary">Summary</a> |
 <a href="/topic?topic=<%= topicData.title %>&mode=deep">Deep Dive</a> |
-<a href="/topic?topic=<%= topicData.title %>&mode=flashcards">Flashcards</a>
+
 
 <hr>
 
@@ -33,18 +33,6 @@ if ('serviceWorker' in navigator) {
     </div>
 <% } %>
 
-<% if (mode === "flashcards") { %>
-    <h2>Flashcards</h2>
-    <% flashcards.forEach(card => { %>
-        <div class="card">
-            <p><strong><%= card.question %></strong></p>
-            <details>
-                <summary>Show Answer</summary>
-                <p><%= card.answer %></p>
-            </details>
-        </div>
-    <% }) %>
-<% } %>
 
 <form action="/star" method="POST">
     <input type="hidden" name="topic" value="<%= topicData.title %>">
@@ -59,43 +47,121 @@ if ('serviceWorker' in navigator) {
 </html>
 
 <style>
-    body {
-    font-family: Arial, sans-serif;
+/* ===== Global Layout ===== */
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     margin: 0;
     padding: 20px;
+    background: #f5f7fb;
 
     display: flex;
     flex-direction: column;
-    align-items: center;   /* centers horizontally */
-    text-align: center;    /* centers text */
-}
-
-h1, h2, h3 {
+    align-items: center;
     text-align: center;
 }
 
-form {
-    margin: 20px 0;
+/* ===== Container ===== */
+
+.container {
+    width: 100%;
+    max-width: 700px;
 }
 
-input {
-    padding: 10px;
-    width: 250px;
-    max-width: 90%;
+/* ===== Headers ===== */
+
+h1 {
+    font-size: 28px;
+    margin-bottom: 15px;
+    color: #1f2937;
 }
+
+h2, h3 {
+    color: #374151;
+}
+
+/* ===== Cards ===== */
+
+.card {
+    background: white;
+    border-radius: 18px;
+    padding: 22px;
+    margin: 18px 0;
+
+    box-shadow:
+        0 2px 8px rgba(0,0,0,0.06);
+}
+
+/* Deep dive content readability */
+
+.card div,
+.card p {
+    line-height: 1.6;
+    font-size: 16px;
+    color: #374151;
+}
+
+/* ===== Buttons ===== */
 
 button {
-    padding: 10px 15px;
+    background: #4f46e5;
+    color: white;
+    border: none;
+    padding: 12px 18px;
+
+    border-radius: 12px;
+    font-size: 15px;
+
+    cursor: pointer;
+    transition: 0.2s ease;
+    margin: 6px;
+}
+
+button:hover {
+    opacity: 0.9;
+}
+
+/* Mode Links */
+
+a {
+    color: #4f46e5;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+/* ===== Flashcards ===== */
+
+details {
+    background: #f8fafc;
+    padding: 14px;
+    border-radius: 12px;
     margin-top: 10px;
     cursor: pointer;
 }
 
-.card {
-    border: 1px solid #ccc;
-    padding: 15px;
-    margin: 15px 0;
-    border-radius: 8px;
-    width: 100%;
-    max-width: 500px;
+/* Mobile Optimization */
+
+@media (max-width: 600px) {
+
+    body {
+        padding: 15px;
+    }
+
+    h1 {
+        font-size: 24px;
+    }
+
+    .card {
+        padding: 18px;
+    }
+
+    button {
+        width: 100%;
+        margin-top: 8px;
+    }
 }
 </style>

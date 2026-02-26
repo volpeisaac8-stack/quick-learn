@@ -16,15 +16,64 @@ if ('serviceWorker' in navigator) {
 
 <h1>Saved Topics</h1>
 
-<ul>
-    <% starredTopics.forEach(topic => { %>
-        <li>
-            <a href="/topic?topic=<%= topic %>"><%= topic %></a>
-        </li>
-    <% }) %>
-</ul>
+<div class="container">
+
+<% starredTopics.forEach(topic => { %>
+
+    <div class="card" style="display:flex; justify-content:space-between; align-items:center;">
+
+        <a href="/topic?topic=<%= topic %>">
+            <%= topic %>
+        </a>
+
+        <form action="/unsave" method="POST">
+            <input type="hidden" name="topic" value="<%= topic %>">
+            <button style="background:#dc5050;">✕</button>
+        </form>
+
+    </div>
+
+<% }) %>
+
+</div>
+
+<br>
 
 <a href="/">Back Home</a>
 
 </body>
 </html>
+
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;   /* centers horizontally */
+        text-align: center;    /* centers text */
+    }
+
+    h1 {
+        text-align: center;
+    }
+
+    ul {
+        list-style-type: none;
+        padding: 0;
+    }
+
+    li {
+        margin: 10px 0;
+    }
+
+    a {
+        text-decoration: none;
+        color: #007BFF;
+    }
+
+    a:hover {
+        text-decoration: underline;
+    }
+</style>

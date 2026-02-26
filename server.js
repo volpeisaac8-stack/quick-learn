@@ -12,9 +12,9 @@ app.set("view engine", "ejs");
 let starredTopics = [];
 
 /* ===============================
-   SAFE WIKIPEDIA SUMMARY FETCH
+   SUMMARY FETCH
 ================================ */
-async function fetchWikipedia(topic) {
+async function fetchWikipediaSummary(topic) {
     try {
         const response = await axios.get(
             `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(topic)}`,
@@ -25,29 +25,29 @@ async function fetchWikipedia(topic) {
             }
         );
 
-        // If page exists but has no extract
-        if (!response.data.extract) return null;
+        if (!response.data || !response.data.extract) return null;
 
         return response.data;
 
-    } catch (error) {
+    } catch {
         return null;
     }
 }
 
 /* ===============================
-   SAFE DEEP DIVE FETCH
+   FOCUSED DEEP DIVE EXTRACTION
 ================================ */
-async function fetchDeepDive(topic) {
+async function fetchFocusedDeepDive(topic) {
     try {
-        const response = await axios.get(
+        // Step 1: Get page sections
+        const sectionResponse = await axios.get(
             "https://en.wikipedia.org/w/api.php",
             {
                 params: {
                     action: "parse",
                     page: topic,
                     format: "json",
-                    prop: "text",
+                    prop: "sections",
                     redirects: true
                 },
                 headers: {
@@ -56,29 +56,48 @@ async function fetchDeepDive(topic) {
             }
         );
 
-        if (!response.data.parse) return null;
+        if (!sectionResponse.data?.parse?.sections) return null;
 
-        return response.data.parse.text["*"];
+        const sections = sectionResponse.data.parse.sections;
+
+        // Select first 3 main sections
+        const mainSections = sections
+            .filter(sec => sec.toclevel === 1)
+            .slice(0, 3);
+
+        let deepContent = "";
+
+        // Fetch content of selected sections
+        for (const section of mainSections) {
+            const contentResponse = await axios.get(
+                "https://en.wikipedia.org/w/api.php",
+                {
+                    params: {
+                        action: "parse",
+                        page: topic,
+                        format: "json",
+                        prop: "text",
+                        section: section.index
+                    },
+                    headers: {
+                        "User-Agent": "QuickLearnApp/1.0"
+                    }
+                }
+            );
+
+            if (contentResponse.data?.parse?.text) {
+                deepContent += contentResponse.data.parse.text["*"];
+            }
+        }
+
+        return deepContent;
 
     } catch {
         return null;
     }
 }
 
-/* ===============================
-   FLASHCARD GENERATOR
-================================ */
-async function generateFlashcards(topic) {
-    const summary = await fetchWikipedia(topic);
-    if (!summary) return [];
 
-    return [
-        {
-            question: `What is ${summary.title}?`,
-            answer: summary.extract
-        }
-    ];
-}
 
 /* ===============================
    ROUTES
@@ -87,22 +106,19 @@ async function generateFlashcards(topic) {
 app.get("/", (req, res) => {
     res.render("index");
 });
-
 app.get("/topic", async (req, res) => {
     let topic = req.query.topic;
     const mode = req.query.mode || "summary";
 
-    if (!topic || topic.trim() === "") {
-        return res.redirect("/");
-    }
+    if (!topic) return res.redirect("/");
 
     topic = topic.trim();
 
-    const topicData = await fetchWikipedia(topic);
+    const topicData = await fetchWikipediaSummary(topic);
 
     if (!topicData) {
         return res.render("index", {
-            error: "Topic not found. Try a different search."
+            error: "Topic not found"
         });
     }
 
@@ -110,12 +126,10 @@ app.get("/topic", async (req, res) => {
     let flashcards = [];
 
     if (mode === "deep") {
-        deepContent = await fetchDeepDive(topicData.title);
+        deepContent = await fetchFocusedDeepDive(topicData.title);
     }
 
-    if (mode === "flashcards") {
-        flashcards = await generateFlashcards(topicData.title);
-    }
+
 
     res.render("topic", {
         topicData,
@@ -139,6 +153,14 @@ app.post("/star", (req, res) => {
     res.redirect("/saved");
 });
 
+
+app.post("/unsave", (req, res) => {
+    const topic = req.body.topic;
+
+    starredTopics = starredTopics.filter(t => t !== topic);
+
+    res.redirect("/saved");
+});
 /* ===============================
    SAVED PAGE
 ================================ */
@@ -146,6 +168,12 @@ app.get("/saved", (req, res) => {
     res.render("saved", { starredTopics });
 });
 
+
+
+app.get("/test-dictionary", async (req, res) => {
+    const result = await fetchUniversalDefinition("india");
+    res.send(result || "No definition returned");
+});
 /* ===============================
    START SERVER
 ================================ */
