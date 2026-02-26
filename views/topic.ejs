@@ -22,6 +22,9 @@ if ('serviceWorker' in navigator) {
 <h3>Modes</h3>
 <a href="/topic?topic=<%= topicData.title %>&mode=summary">Summary</a> |
 <a href="/topic?topic=<%= topicData.title %>&mode=deep">Deep Dive</a> |
+<a href="/topic?topic=<%= topicData.title %>&videos=true">
+    <button>🎥 Related Videos</button>
+</a>
 
 
 <hr>
@@ -33,7 +36,27 @@ if ('serviceWorker' in navigator) {
     </div>
 <% } %>
 
+<% if (videos && videos.length > 0) { %>
 
+<h2>Related Videos</h2>
+
+<% videos.forEach(video => { %>
+
+<div class="card">
+    <p><%= video.snippet.title %></p>
+
+    <iframe
+        width="100%"
+        height="250"
+        src="https://www.youtube.com/embed/<%= video.id.videoId %>"
+        frameborder="0"
+        allowfullscreen>
+    </iframe>
+</div>
+
+<% }) %>
+
+<% } %>
 <form action="/star" method="POST">
     <input type="hidden" name="topic" value="<%= topicData.title %>">
     <button>⭐ Star This Topic</button>

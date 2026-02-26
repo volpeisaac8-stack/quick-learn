@@ -97,7 +97,29 @@ async function fetchFocusedDeepDive(topic) {
     }
 }
 
+//fetch related videos
+async function fetchRelatedVideos(topic) {
+    try {
+        const response = await axios.get(
+            "https://www.googleapis.com/youtube/v3/search",
+            {
+                params: {
+                    part: "snippet",
+                    q: "all about " + topic,
+                    type: "video",
+                    maxResults: 5,
+                    key: "AIzaSyBmk7O1uCMfF4C0_w3czFExTO2fshnUQII"
+                }
+            }
+        );
 
+        return response.data.items || [];
+
+    } catch (error) {
+        console.log("YouTube API Error:", error.message);
+        return [];
+    }
+}
 
 /* ===============================
    ROUTES
@@ -129,6 +151,11 @@ app.get("/topic", async (req, res) => {
         deepContent = await fetchFocusedDeepDive(topicData.title);
     }
 
+    let videos = [];
+
+    if (req.query.videos === "true") {
+        videos = await fetchRelatedVideos(topicData.title);
+    }
 
 
     res.render("topic", {
@@ -136,7 +163,8 @@ app.get("/topic", async (req, res) => {
         mode,
         deepContent,
         flashcards,
-        starredTopics
+        starredTopics,
+        videos
     });
 });
 
@@ -152,6 +180,8 @@ app.post("/star", (req, res) => {
 
     res.redirect("/saved");
 });
+
+//fetch related videos
 
 
 app.post("/unsave", (req, res) => {
