@@ -73,6 +73,64 @@ async function fetchWikipediaSummary(topic) {
     }
 }
 
+
+// random catagory fetch
+const curatedCategories = {
+  science: "Category:Fundamental_physics",
+  history: "Category:World_history",
+  technology: "Category:Technology",
+  geography: "Category:Countries",
+  philosophy: "Category:Philosophy"
+};
+async function fetchRandomCategory() {
+    const categories = Object.keys(curatedCategories);
+    const randomCategoryKey = categories[Math.floor(Math.random() * categories.length)];
+    const categoryTitle = curatedCategories[randomCategoryKey];
+
+    try {
+        // Step 1: Get category members
+        const categoryResponse = await axios.get(
+            "https://en.wikipedia.org/w/api.php",
+            {
+                params: {
+                    action: "query",
+                    list: "categorymembers",
+                    cmtitle: categoryTitle,
+                    cmlimit: 50,
+                    format: "json"
+                },
+                headers: {
+                    "User-Agent": "QuickLearnApp/1.0"
+                }
+            }
+        );
+
+        // Filter only real articles (namespace 0)
+        const pages = categoryResponse.data.query.categorymembers
+            .filter(page => page.ns === 0);
+
+        if (!pages.length) return null;
+
+        // Step 2: Pick random article
+        const randomPage = pages[Math.floor(Math.random() * pages.length)];
+
+        // Step 3: Fetch its summary
+        const summaryResponse = await axios.get(
+            `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(randomPage.title)}`,
+            {
+                headers: {
+                    "User-Agent": "QuickLearnApp/1.0"
+                }
+            }
+        );
+
+        return summaryResponse.data;
+
+    } catch (err) {
+        console.log("Error fetching random category:", err.message);
+        return null;
+    }
+}
 /* Deep Dive */
 
 async function fetchFocusedDeepDive(topic) {
@@ -215,6 +273,7 @@ app.get("/topic", async (req, res) => {
         deepContent = await fetchFocusedDeepDive(topicData.title);
     }
 
+
     if (req.query.videos === "true") {
         videos = await fetchRelatedVideos(topicData.title);
     }
@@ -225,6 +284,23 @@ app.get("/topic", async (req, res) => {
         deepContent,
         starredTopics,
         videos
+    });
+});
+
+app.get("/random-topic", async (req, res) => {
+
+    const topicData = await fetchRandomCategory();
+    if (!topicData) {
+        return res.render("index", {
+            error: "Could not fetch random topic"
+        });
+    }
+    res.render("topic", {
+        topicData,
+        mode: "summary",
+        deepContent: null,
+        starredTopics,
+        videos: []
     });
 });
 
