@@ -7,23 +7,23 @@
 </head>
 
 <body>
+<div class="container">
+    <h1>QuickLearn</h1>
 
-<h1>QuickLearn</h1>
+    <form action="/topic" method="GET">
+        <input type="text" name="topic" placeholder="Enter topic" required>
+        <button type="submit">🧑‍🎓 Start Learning</button>
+    </form>
 
-<form action="/topic" method="GET">
-    <input type="text" name="topic" placeholder="Enter topic" required>
-    <button type="submit">🧑‍🎓 Start Learning</button>
-</form>
+    <!-- button for searching random topic-->
 
-<!-- button for searching random topic-->
-
-<br>
-<div class="buttons">
-<a href="/random-topic"><button>🎲 Random Topic</button></a>
+    <br>
+    <div class="buttons">
+    <a href="/random-topic"><button>🎲 Random Topic</button></a>
+    </div>
+    <a href="/saved"><button>📚 Saved Topics</button></a>
+    <a href="/quiz/start"><button>🧠 Start Quiz</button></a>
 </div>
-<a href="/saved"><button>📚 Saved Topics</button></a>
-<a href="/quiz/start"><button>🧠 Start Quiz</button></a>
-
 
 <div class="stars"></div>
 <div class="shooting-star"></div>
@@ -46,7 +46,7 @@ html, body {
 }
 
 body {
-  min-height: 100vh;
+
   background: linear-gradient(to bottom, #0b0b2b, #1b2735 70%, #090a0f);
   overflow: hidden;
   position: relative;
@@ -164,5 +164,9 @@ h1 {
   color: white;
   text-align: center;
 
+}
+
+.container{
+    z-index: 10;
 }
 </style>
